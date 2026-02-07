@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Order;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,10 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'order_number' => 'ORD-' . strtoupper(uniqid()),
+            'user_id' => User::factory(),
+            'status' => fake()->randomElement(Order::$status),
+            'total' => fake()->randomFloat(2, 50, 1000),
         ];
     }
 }
