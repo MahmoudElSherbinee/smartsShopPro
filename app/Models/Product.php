@@ -10,6 +10,8 @@ class Product extends Model
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
 
+    protected $fillable = ['name', 'slug', 'description', 'price', 'stock' ,'category_id'];
+
 
     public function order_items()
     {
