@@ -10,6 +10,8 @@ class Order extends Model
     /** @use HasFactory<\Database\Factories\OrderFactory> */
     use HasFactory;
 
+    protected $fillable = ['order_number', 'status', 'user_id', 'total', 'shipping_address', 'shipping_phone', 'shipping_city', 'notes'];
+
     public static array $status = [
         'pending',
         'processing',

@@ -1,16 +1,3 @@
-export type * from './auth';
-export type * from './navigation';
-export type * from './ui';
-
-import type { Auth } from './auth';
-
-export type SharedData = {
-    name: string;
-    auth: Auth;
-    sidebarOpen: boolean;
-    [key: string]: unknown;
-};
-
 export interface User {
     id: number;
     name: string;
@@ -32,7 +19,6 @@ export interface Product {
     price: number;
     stock: number;
     category_id: number;
-    user_id: number;
     category?: Category;
     description?: string;
     created_at?: string;
