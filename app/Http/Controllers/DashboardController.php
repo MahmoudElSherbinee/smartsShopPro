@@ -23,7 +23,7 @@ class DashboardController extends Controller
                 'total_orders' => Order::count(),
                 'total_customers' => User::where('type', 'customer')->count(),
                 'total_vendors' => User::where('type', 'vendor')->count(),
-                'total_revenue' => Order::sum('total'),
+                'total_revenue' => Order::where('status', '!=', 'cancelled')->sum('total'),
                 'pending_orders' => Order::where('status', 'pending')->count(),
                 'recent_orders' => Order::with('user')->latest()->take(5)->get(),
             ];
@@ -45,7 +45,7 @@ class DashboardController extends Controller
         } else {
             $data = [
                 'my_orders' => Order::where('user_id', $user->id)->count(),
-                'total_spent' => Order::where('user_id', $user->id)->sum('total'),
+                'total_spent' => Order::where('user_id', $user->id)->where('status', '!=', 'cancelled')->sum('total'),
                 'pending_orders' => Order::where('user_id', $user->id)->where('status', 'pending')->count(),
                 'recent_orders' => Order::where('user_id', $user->id)
                     ->with('order_items')

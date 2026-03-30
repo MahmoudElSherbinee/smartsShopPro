@@ -10,8 +10,16 @@ class Product extends Model
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'price', 'stock' ,'category_id', 'user_id'];
+    protected $fillable = ['name', 'slug', 'description', 'price', 'stock', 'category_id', 'user_id', 'image'];
 
+    protected $appends = ['image_url'];
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return asset('images/placeholder.png');
+    }
 
     public function order_items()
     {

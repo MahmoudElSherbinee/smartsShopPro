@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -66,8 +67,14 @@ class ProductController extends Controller
             'slug' => 'required|unique:products',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'category_id' => 'required|exists:categories,id'
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $validated['image'] = $path;
+        }
 
         if (auth()->user()->isVendor() || auth()->user()->isAdmin()) {
             $validated['user_id'] = auth()->id();
@@ -107,7 +114,17 @@ class ProductController extends Controller
             'name' => 'sometimes|required',
             'price' => 'sometimes|numeric',
             'stock' => 'sometimes|integer',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $path = $request->file('image')->store('products', 'public');
+            $validated['image'] = $path;
+        }
 
         $product->update($validated);
 
@@ -119,6 +136,9 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         Gate::authorize('delete', $product);
+        if ($product->image) {
+            Storage::disk('public')->delete($product->image);
+        }
         $product->delete();
         return redirect('/products')->with('success', 'Product deleted successfully');
     }

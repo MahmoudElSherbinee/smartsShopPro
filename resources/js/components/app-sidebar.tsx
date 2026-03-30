@@ -39,6 +39,11 @@ const mainNavItems: NavItem[] = [
         href: '/categories',
         icon: Tag,
     },
+    {
+        title: 'Cart',
+        href: '/cart',
+        icon: ShoppingCart,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

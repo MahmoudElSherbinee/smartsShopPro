@@ -84,9 +84,11 @@ class CartController extends Controller
 
             $cart[$id]['quantity'] = $request->quantity;
             session()->put('cart', $cart);
+
+            return redirect()->route('cart.index')->with('success', '✓ Cart updated successfully!');
         }
 
-        return redirect()->route('cart.index');
+        return redirect()->route('cart.index')->with('error', 'Product not found in cart!');
     }
 
     /**
@@ -97,11 +99,13 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         if (isset($cart[$id])) {
+            $productName = $cart[$id]['name'];
             unset($cart[$id]);
             session()->put('cart', $cart);
+            return redirect()->route('cart.index')->with('success', "✓ {$productName} removed from cart!");
         }
 
-        return redirect()->route('cart.index')->with('success', 'Item removed from cart!');
+        return redirect()->route('cart.index')->with('error', 'Product not found in cart!');
     }
 
     /**

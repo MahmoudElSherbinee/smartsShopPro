@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
+use App\Services\OrderService;
+use App\Http\Requests\StoreOrderRequest;
+use App\Enums\OrderStatus;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -13,6 +15,9 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private OrderService $orderService
+    ) {}
     /**
      * Display a listing of the user's orders.
      */
@@ -52,9 +57,8 @@ class OrderController extends Controller
     /**
      * Store new order (from cart)
      */
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
-
         $user = $request->user();
 
         $cart = session()->get('cart', []);
@@ -64,59 +68,16 @@ class OrderController extends Controller
                 ->with('error', 'Your cart is empty!');
         }
 
-        $validated = $request->validate([
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'phone' => 'required|string|max:20',
-            'notes' => 'nullable|string|max:500',
-        ]);
 
         try {
-            DB::beginTransaction();
-
-            $total = 0;
-            foreach ($cart as $item) {
-                $total += $item['price'] * $item['quantity'];
-            }
-
-            $orderNumber = 'ORD-' . strtoupper(uniqid());
-
-            $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => $user->id,
-                'status' => 'pending',
-                'total' => $total,
-                'notes' => $validated['notes'] ?? null,
-                'shipping_address' => $validated['address'],
-                'shipping_city' => $validated['city'],
-                'shipping_phone' => $validated['phone'],
-            ]);
-
-            foreach ($cart as $item) {
-                $product = Product::find($item['id']);
-
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for {$product->name}");
-                }
-
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'quantity' => $item['quantity'],
-                    'price' => $product->price,
-                ]);
-
-                $product->decrement('stock', $item['quantity']);
-            }
-
+            $order = $this->orderService->createOrder($user, $cart, $request->validated());
             session()->forget('cart');
-            DB::commit();
-
+            Log::info("Order: $order->order_number. Has been created Successfully");
             return redirect()->route('orders.show', $order->id)
-                ->with('success', 'Order placed successfully!');
-        } catch (\Exception $e) {
+                ->with('success', '✓ Order placed successfully! Your order number is ' . $order->order_number);
+        } catch (Exception $e) {
             DB::rollBack();
+            Log::error("Error Man");
             return redirect()->back()
                 ->with('error', 'Failed to place order: ' . $e->getMessage());
         }
@@ -128,25 +89,21 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         Gate::authorize('update', $order);
-        $user = $request->user();
 
-        if (!$user->isAdmin()) {
-            abort(403, 'Unauthorized');
-        }
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled,refunded'
+            'status' => ['required', 'in:' . implode(',', OrderStatus::values())]
         ]);
 
-        if ($validated['status'] === 'cancelled' && $order->status !== 'cancelled') {
-            foreach ($order->order_items as $item) {
-                $item->product->increment('stock', $item->quantity);
-            }
+        try {
+            $this->orderService->updateStatus($order, $validated['status']);
+
+            return redirect()->back()
+                ->with('success', 'Order status updated to ' . OrderStatus::from($validated['status'])->label());
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to update status: ' . $e->getMessage());
         }
-
-        $order->update(['status' => $validated['status']]);
-
-        return redirect()->back()->with('success', 'Order status updated!');
     }
 
     /**
@@ -155,23 +112,14 @@ class OrderController extends Controller
     public function cancel(Request $request, Order $order)
     {
         Gate::authorize('cancel', $order);
-        $user = $request->user();
 
-        if ($order->user_id !== $user->id) {
-            abort(403, 'Unauthorized');
-        }
-
-        if ($order->status !== 'pending') {
+        try {
+            $this->orderService->cancelOrder($order);
+            return redirect()->back()->with('success', 'Order cancelled successfully');
+        } catch (Exception $e) {
             return redirect()->back()
-                ->with('error', 'Only pending orders can be cancelled');
+                ->with('error', 'Failed to cancel order: ' . $e->getMessage());
         }
-
-        foreach ($order->order_items as $item) {
-            $item->product->increment('stock', $item->quantity);
-        }
-
-        $order->update(['status' => 'cancelled']);
-        return redirect()->back()->with('success', 'Order cancelled successfully');
     }
 
     /**
@@ -194,7 +142,8 @@ class OrderController extends Controller
 
         return Inertia::render('Admin/Orders/Index', [
             'orders' => $orders,
-            'filters' => $request->only(['status'])
+            'filters' => $request->only(['status']),
+            'statuses' => OrderStatus::labels(),
         ]);
     }
 }
