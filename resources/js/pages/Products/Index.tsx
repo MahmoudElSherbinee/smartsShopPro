@@ -107,6 +107,22 @@ export default function ProductsIndex({ products }: Props) {
                                             <AddToCartButton productId={product.id} stock={product.stock} />
                                         </div>
 
+                                        {/* Wishlist Button */}
+                                        {user.type === 'customer' && (
+                                            <button
+                                                onClick={() => {
+                                                    if (product.in_wishlist) {
+                                                        router.delete(`/wishlist/remove/${product.id}`);
+                                                    } else {
+                                                        router.post(`/wishlist/add/${product.id}`);
+                                                    }
+                                                }}
+                                                className={`text-2xl ${product.in_wishlist ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition`}
+                                            >
+                                                {product.in_wishlist ? '❤️' : '🤍'}
+                                            </button>
+                                        )}
+
                                         {/* Action Buttons (Admin/Vendor) */}
                                         {(user.type === 'admin' || (user.type === 'vendor' && product.user_id === user.id)) && (
                                             <div className="border-t p-3 bg-gray-50 flex justify-end gap-2">
@@ -139,13 +155,12 @@ export default function ProductsIndex({ products }: Props) {
                                             <Link
                                                 key={i}
                                                 href={link.url || '#'}
-                                                className={`px-3 py-2 rounded-lg transition ${
-                                                    link.active
+                                                className={`px-3 py-2 rounded-lg transition ${link.active
                                                         ? 'bg-blue-500 text-white'
                                                         : link.url
                                                             ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                             : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                                }`}
+                                                    }`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
                                         ))}

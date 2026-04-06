@@ -12,7 +12,7 @@ class Product extends Model
 
     protected $fillable = ['name', 'slug', 'description', 'price', 'stock', 'category_id', 'user_id', 'image'];
 
-    protected $appends = ['image_url', 'average_rating', 'reviews_count'];
+    protected $appends = ['image_url', 'average_rating', 'reviews_count', 'in_wishlist'];
     public function getImageUrlAttribute()
     {
         if ($this->image) {
@@ -57,5 +57,18 @@ class Product extends Model
     public function getReviewsCountAttribute()
     {
         return $this->approvedReviews()->count();
+    }
+
+    public function wishlistedBy()
+    {
+        return $this->belongsToMany(User::class, 'wishlists');
+    }
+
+    public function getInWishlistAttribute()
+    {
+        if (!auth()->check()) return false;
+        return Wishlist::where('user_id', auth()->id())
+            ->where('product_id', $this->id)
+            ->exists();
     }
 }

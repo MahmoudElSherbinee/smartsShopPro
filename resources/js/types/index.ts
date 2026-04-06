@@ -39,4 +39,5 @@ export interface Product {
     description?: string;
     created_at?: string;
     updated_at?: string;
+    in_wishlist?: boolean;
 }
