@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { usePage } from '@inertiajs/react';
@@ -17,9 +18,40 @@ interface PageProps extends Record<string, any> {
     };
 }
 
+
+
+
+
 export default function Show({ product }: Props) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
+
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmitReview = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+
+        router.post(`/products/${product.id}/reviews`, {
+            rating,
+            comment
+        }, {
+            onFinish: () => {
+                setSubmitting(false);
+                setRating(0);
+                setComment('');
+            }
+        });
+    };
+
+    const handleDeleteReview = (reviewId: number) => {
+        if (confirm('Are you sure you want to delete this review?')) {
+            router.delete(`/reviews/${reviewId}`);
+        }
+    };
 
     const handleDelete = () => {
         if (confirm('Are you sure you want to delete this product?')) {
@@ -75,6 +107,8 @@ export default function Show({ product }: Props) {
                                         </Link>
                                     </div>
 
+
+
                                     <div className="border-t border-b py-4">
                                         <div className="flex items-baseline gap-2">
                                             <span className="text-3xl font-bold text-green-600">
@@ -105,6 +139,115 @@ export default function Show({ product }: Props) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Reviews Section */}
+                            <div className="mt-8 border-t pt-8">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <h2 className="text-2xl font-bold">Reviews</h2>
+                                    {product.average_rating && (
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <span key={star} className="text-2xl">
+                                                        {star <= Math.round(product.average_rating) ? '⭐' : '☆'}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <span className="text-gray-600">
+                                                ({product.average_rating}) • {product.reviews_count} reviews
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Add Review Form - Only for customers who purchased? or just logged in */}
+                                {auth.user?.type === 'customer' && (
+                                    <form onSubmit={handleSubmitReview} className="mb-8 p-4 bg-gray-50 rounded-lg">
+                                        <h3 className="font-semibold mb-3">Write a Review</h3>
+
+                                        {/* Star Rating */}
+                                        <div className="mb-3">
+                                            <label className="block mb-1">Rating</label>
+                                            <div className="flex gap-1">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <button
+                                                        key={star}
+                                                        type="button"
+                                                        onClick={() => setRating(star)}
+                                                        onMouseEnter={() => setHoverRating(star)}
+                                                        onMouseLeave={() => setHoverRating(0)}
+                                                        className="text-3xl focus:outline-none"
+                                                    >
+                                                        {star <= (hoverRating || rating) ? '⭐' : '☆'}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {rating === 0 && <p className="text-red-500 text-sm mt-1">Please select a rating</p>}
+                                        </div>
+
+                                        {/* Comment */}
+                                        <div className="mb-3">
+                                            <label className="block mb-1">Comment (optional)</label>
+                                            <textarea
+                                                value={comment}
+                                                onChange={(e) => setComment(e.target.value)}
+                                                className="w-full border rounded px-3 py-2"
+                                                rows={3}
+                                                placeholder="Share your experience with this product..."
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={submitting || rating === 0}
+                                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                                        >
+                                            {submitting ? 'Submitting...' : 'Submit Review'}
+                                        </button>
+                                    </form>
+                                )}
+
+                                {/* Reviews List */}
+                                <div className="space-y-4">
+                                    {product.reviews?.length === 0 ? (
+                                        <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+                                    ) : (
+                                        product.reviews?.map((review: any) => (
+                                            <div key={review.id} className="border rounded-lg p-4">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex">
+                                                                {[1, 2, 3, 4, 5].map(star => (
+                                                                    <span key={star}>
+                                                                        {star <= review.rating ? '⭐' : '☆'}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                            <span className="font-medium">{review.user?.name}</span>
+                                                            <span className="text-sm text-gray-400">
+                                                                {new Date(review.created_at).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        {review.comment && (
+                                                            <p className="text-gray-600 mt-2">{review.comment}</p>
+                                                        )}
+                                                    </div>
+                                                    {(auth.user?.id === review.user_id || auth.user?.type === 'admin') && (
+                                                        <button
+                                                            onClick={() => handleDeleteReview(review.id)}
+                                                            className="text-red-500 hover:text-red-700 text-sm"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
 
                             {/* Action Buttons (Admin/Vendor) */}
                             {(user.type === 'admin' || (user.type === 'vendor' && product.user_id === user.id)) && (

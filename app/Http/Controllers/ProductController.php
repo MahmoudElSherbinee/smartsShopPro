@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
@@ -34,7 +36,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        $product->load('category');
+        $product->load('category', 'reviews.user');
 
         return Inertia::render('Products/Show', [
             'product' => $product
@@ -59,18 +61,9 @@ class ProductController extends Controller
      * Store the created Product
      * @return Category::all() to specify the product category
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        Gate::authorize('create', Product::class);
-        $validated = $request->validate([
-            'name' => 'required',
-            'slug' => 'required|unique:products',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
+        $validated = $request->validated();
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             $validated['image'] = $path;
@@ -107,24 +100,17 @@ class ProductController extends Controller
      * @param Product $product
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        Gate::authorize('update', $product);
-        $validated = $request->validate([
-            'name' => 'sometimes|required',
-            'price' => 'sometimes|numeric',
-            'stock' => 'sometimes|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
+        $validated = $request->validated();
         if ($request->hasFile('image')) {
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-
             $path = $request->file('image')->store('products', 'public');
             $validated['image'] = $path;
         }
+
 
         $product->update($validated);
 

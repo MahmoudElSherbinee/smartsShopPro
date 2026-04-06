@@ -33,6 +33,8 @@ export interface Product {
     stock: number;
     category_id: number;
     user_id: number;
+    image?: string;
+    image_url?: string;
     category?: Category;
     description?: string;
     created_at?: string;

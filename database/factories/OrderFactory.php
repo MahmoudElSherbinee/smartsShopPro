@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,7 +22,7 @@ class OrderFactory extends Factory
         return [
             'order_number' => 'ORD-' . strtoupper(uniqid()),
             'user_id' => User::factory(),
-            'status' => fake()->randomElement(Order::$status),
+            'status' => fake()->randomElement(OrderStatus::values()),
             'total' => fake()->randomFloat(2, 50, 1000),
         ];
     }
