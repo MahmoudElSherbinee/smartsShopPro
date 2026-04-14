@@ -1,4 +1,4 @@
-```markdown
+
 # 🛒 SmartShop Pro - E-Commerce Platform
 
 A full-featured e-commerce platform built with **Laravel 12**, **React**, **TypeScript**, and **Inertia.js**.
