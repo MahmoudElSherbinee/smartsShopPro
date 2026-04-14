@@ -179,8 +179,8 @@ This project is open-sourced software licensed under the [MIT license](https://o
 **Mahmoud El-Sherbine**
 
 - Email: mahmoudsherbine168@gmail.com
-- GitHub: [@mahmoud-sherbine](https://github.com/mahmoud-sherbine)
-- LinkedIn: [Mahmoud El-Sherbine](https://linkedin.com/in/mahmoud-el-sherbine)
+- GitHub: [@mahmoud-sherbine](https://github.com/mahmoudelsherbinee)
+- LinkedIn: [Mahmoud El-Sherbine](https://www.linkedin.com/in/mahmoud-el-sherbinee)
 
 ---
 
