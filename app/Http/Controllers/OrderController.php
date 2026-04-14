@@ -59,27 +59,56 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $user = $request->user();
 
+        $user = $request->user();
         $cart = session()->get('cart', []);
 
         if (empty($cart)) {
-            return redirect()->route('cart.index')
-                ->with('error', 'Your cart is empty!');
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Cart is empty'], 422);
+            }
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty!');
         }
 
 
         try {
-            $order = $this->orderService->createOrder($user, $cart, $request->validated());
+            $paymentMethod = $request->validated()['payment_method'];
+            $order = $this->orderService->createOrder(
+                $user,
+                $cart,
+                $request->validated(),
+                $paymentMethod
+            );
+
             session()->forget('cart');
-            Log::info("Order: $order->order_number. Has been created Successfully");
-            return redirect()->route('orders.show', $order->id)
-                ->with('success', '✓ Order placed successfully! Your order number is ' . $order->order_number);
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error("Error Man");
+
+            // COD: redirect مباشرة
+            if ($paymentMethod === 'cod') {
+                return redirect()->route('orders.show', $order)
+                    ->with('success', '✓ Order placed successfully!');
+            }
+
+            // Stripe: نعيد JSON للـ frontend
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'order_id' => $order->id,
+                    'total' => $order->total,
+                ]);
+            }
+
+            // Stripe: نمرر order_id في session و نرجع للـ checkout
+            return redirect()->route('checkout')->with([
+                'stripe_order_id' => $order->id,
+                'stripe_order_total' => $order->total,
+            ]);
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
             return redirect()->back()
-                ->with('error', 'Failed to place order: ' . $e->getMessage());
+                ->withInput()
+                ->with('error', '✗ Failed to place order: ' . $e->getMessage());
         }
     }
 

@@ -73,13 +73,28 @@ export default function Show({ product }: Props) {
                         >
                             ← Back to Products
                         </Link>
-                        <Link
-                            href="/cart"
-                            className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition"
-                        >
-                            <span className="text-xl">🛒</span>
-                            <span className="text-gray-700">View Cart</span>
-                        </Link>
+                        {/* Links */}
+                        <div className="flex justify-end mb-4">
+                            <div className='mx-2'>
+                                <Link
+                                    href="/wishlist"
+                                    className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition"
+                                >
+                                    <span className="text-xl">❤️</span>
+                                    <span className="text-gray-700">Wishlist</span>
+                                </Link>
+                            </div>
+
+                            <div className='mx-2'>
+                                <Link
+                                    href="/cart"
+                                    className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition"
+                                >
+                                    <span className="text-xl">🛒</span>
+                                    <span className="text-gray-700">View Cart</span>
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -107,7 +122,21 @@ export default function Show({ product }: Props) {
                                         </Link>
                                     </div>
 
-
+                                    {/* Wishlist Button */}
+                                    {user.type === 'customer' && (
+                                        <button
+                                            onClick={() => {
+                                                if (product.in_wishlist) {
+                                                    router.delete(`/wishlist/remove/${product.id}`);
+                                                } else {
+                                                    router.post(`/wishlist/add/${product.id}`);
+                                                }
+                                            }}
+                                            className={`text-2xl ${product.in_wishlist ? 'text-red-500' : 'text-gray-400'} hover:text-red-500 transition`}
+                                        >
+                                            {product.in_wishlist ? '❤️' : '🤍'}
+                                        </button>
+                                    )}
 
                                     <div className="border-t border-b py-4">
                                         <div className="flex items-baseline gap-2">

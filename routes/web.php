@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -14,6 +15,8 @@ use Laravel\Fortify\Features;
 // ===== Protected Routes =====
 
 Route::middleware(['auth'])->group(function () {
+
+
 
     // ==== Products ====
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
@@ -90,5 +93,18 @@ Route::get('/categories/{category}', [CategoryController::class, 'show'])->name(
 Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+
+Route::get('/payment/{order}', function (App\Models\Order $order) {
+    return Inertia::render('PaymentPage', ['order' => $order]);
+})->middleware('auth')->name('payment.page');
+
+
+Route::post('/stripe/webhook', [App\Http\Controllers\Api\WebhookController::class, 'handle'])
+    ->name('stripe.webhook');
+
+Route::get('/payment-success', function () {
+    return Inertia::render('PaymentSuccess');
+})->name('payment.success');
 
 require __DIR__ . '/settings.php';

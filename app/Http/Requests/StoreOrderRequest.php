@@ -27,6 +27,7 @@ class StoreOrderRequest extends FormRequest
             'city' => 'required|string|max:100',
             'phone' => 'required|string|max:20|regex:/^([0-9\s\-\+\(\)]*)$/',
             'notes' => 'nullable|string|max:500',
+            'payment_method' => 'required|in:cod,stripe',
         ];
     }
 

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
-    public function createOrder($user, $cart, $shippingData)
+    public function createOrder($user, $cart, $shippingData, $paymentMethod = 'cod')
     {
         DB::beginTransaction();
         try {
@@ -27,6 +27,8 @@ class OrderService
                 'shipping_city' => $shippingData['city'],
                 'shipping_phone' => $shippingData['phone'],
                 'notes' => $shippingData['notes'] ?? null,
+                'payment_method' => $paymentMethod,
+                'payment_status' => 'pending',
             ]);
 
             foreach ($cart as $item) {
@@ -46,6 +48,18 @@ class OrderService
                     'price' => $product->price,
                 ]);
                 $product->decrement('stock', $item['quantity']);
+            }
+
+            if ($paymentMethod === 'cod') {
+                $order->update([
+                    'status' => 'processing',
+                    'payment_status' => 'pending'
+                ]);
+            } else {
+                $order->update([
+                    'status' => 'pending',
+                    'payment_status' => 'pending'
+                ]);
             }
 
             DB::commit();

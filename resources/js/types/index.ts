@@ -20,9 +20,13 @@ export interface User {
 
 export interface Category {
     id: number;
-    products_count?: number;
+    product_id?: number;
     name: string;
     slug: string;
+}
+
+export interface Review {
+
 }
 
 export interface Product {
@@ -40,4 +44,7 @@ export interface Product {
     created_at?: string;
     updated_at?: string;
     in_wishlist?: boolean;
+    reviews_count?: number;
+    average_rating?: number;
+    reviews?: Review;
 }

@@ -125,13 +125,27 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         if (empty($cart)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty!');
+            return redirect()->route('cart.index')
+                ->with('error', 'Your cart is empty!');
         }
 
-        // Here we'll create the order
+        $total = $this->calculateTotal($cart);
+
+        // جلب stripe order من session
+        $stripeOrderId = session('stripe_order_id');
+        $stripeOrderTotal = session('stripe_order_total');
+
+        // مسح session بعد الاستخدام
+        if ($stripeOrderId) {
+            session()->forget(['stripe_order_id', 'stripe_order_total']);
+        }
+
         return Inertia::render('Cart/Checkout', [
             'cart' => $cart,
-            'total' => $this->calculateTotal($cart)
+            'total' => $total,
+            'flash' => session('flash'),
+            'order_id' => $stripeOrderId,
+            'order_total' => $stripeOrderTotal,
         ]);
     }
 

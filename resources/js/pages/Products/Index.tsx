@@ -39,16 +39,29 @@ export default function ProductsIndex({ products }: Props) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Cart Link */}
+                    {/* Links */}
                     <div className="flex justify-end mb-4">
-                        <Link
+                        <div className='mx-2'>
+                            <Link
+                            href="/wishlist"
+                            className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition"
+                        >
+                            <span className="text-xl">❤️</span>
+                            <span className="text-gray-700">Wishlist</span>
+                        </Link>
+                        </div>
+
+                        <div className='mx-2'>
+                            <Link
                             href="/cart"
                             className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition"
                         >
                             <span className="text-xl">🛒</span>
                             <span className="text-gray-700">View Cart</span>
                         </Link>
+                        </div>
                     </div>
+
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6">

@@ -20,6 +20,8 @@ interface Order {
     shipping_phone?: string;
     created_at: string;
     order_items: OrderItem[];
+    payment_method: string;
+    payment_status: string;
 }
 
 interface Props {
@@ -125,6 +127,27 @@ export default function OrdersShow({ order }: Props) {
                                     )}
                                 </div>
                             )}
+
+                            {/* Payment Information */}
+                            <div className="border-t pt-4 mt-4">
+                                <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
+                                <div className="space-y-2">
+                                    <p>
+                                        <span className="font-medium">Method:</span>{' '}
+                                        {order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}
+                                    </p>
+                                    <p>
+                                        <span className="font-medium">Status:</span>{' '}
+                                        <span className={`px-2 py-1 rounded-full text-xs ${order.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                order.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
+                                            }`}>
+                                            {order.payment_status === 'paid' ? 'Paid' :
+                                                order.payment_status === 'pending' ? (order.payment_method === 'cod' ? 'Pending (Pay on delivery)' : 'Pending') : 'Failed'}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
