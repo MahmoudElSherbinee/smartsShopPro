@@ -18,16 +18,82 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::with('category')
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%");
-            })
-            ->latest()
-            ->paginate(12);
-        // dd($products);
+        // أضف الـ withCount و withAvg مع بعض
+        $query = Product::with('category')
+            ->withAvg('approvedReviews', 'rating')
+            ->withCount('approvedReviews');  // ← أضف هذا عشان نجيب عدد التقييمات
+
+        // 1. Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // 2. Category Filter
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        // 3. Price Range
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // 4. Rating Filter (min rating)
+        if ($request->filled('rating')) {
+            $rating = (int) $request->rating;
+            $query->whereHas('approvedReviews')
+                ->having('approved_reviews_avg_rating', '>=', $rating);
+        }
+
+        // 5. In Stock Only
+        if ($request->boolean('in_stock')) {
+            $query->where('stock', '>', 0);
+        }
+
+        // 6. Sorting
+        switch ($request->sort) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'rating_desc':
+                // ✅ أفضل المنتجات = (متوسط التقييم × عدد التقييمات)
+                $query->orderByRaw('(approved_reviews_avg_rating * approved_reviews_count) DESC');
+                break;
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            default:
+                $query->latest();
+        }
+
+        // 7. Categories for filter sidebar
+        $categories = Category::withCount('products')->get();
+
+        // 8. Pagination
+        $products = $query->paginate(12)->withQueryString();
+
         return Inertia::render('Products/Index', [
             'products' => $products,
-            'filters' => $request->only(['search'])
+            'categories' => $categories,
+            'filters' => $request->only([
+                'search',
+                'category',
+                'min_price',
+                'max_price',
+                'rating',
+                'sort',
+                'in_stock'
+            ]),
         ]);
     }
 
