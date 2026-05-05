@@ -18,10 +18,9 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // أضف الـ withCount و withAvg مع بعض
         $query = Product::with('category')
             ->withAvg('approvedReviews', 'rating')
-            ->withCount('approvedReviews');  // ← أضف هذا عشان نجيب عدد التقييمات
+            ->withCount('approvedReviews');
 
         // 1. Search
         if ($request->filled('search')) {
@@ -66,7 +65,6 @@ class ProductController extends Controller
                 $query->orderBy('price', 'desc');
                 break;
             case 'rating_desc':
-                // ✅ أفضل المنتجات = (متوسط التقييم × عدد التقييمات)
                 $query->orderByRaw('(approved_reviews_avg_rating * approved_reviews_count) DESC');
                 break;
             case 'newest':
