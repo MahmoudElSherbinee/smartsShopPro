@@ -8,6 +8,9 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Mail\OrderConfirmationMail;
+use App\Mail\OrderStatusUpdateMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderService
 {
@@ -64,6 +67,7 @@ class OrderService
 
             DB::commit();
 
+            Mail::to($user->email)->send(new OrderConfirmationMail($order));
             return $order->load(['order_items', 'user']);
         } catch (\Exception $e) {
 
@@ -119,6 +123,7 @@ class OrderService
 
         try {
             $newStatusEnum = OrderStatus::from($newStatus);
+            $oldStatus = $order->status->value;
             if ($newStatusEnum === OrderStatus::CANCELLED && $order->status !== OrderStatus::CANCELLED) {
                 foreach ($order->order_items as $item) {
                     $item->product->increment('stock', $item->quantity);
@@ -127,10 +132,10 @@ class OrderService
             $order->update(['status' => $newStatusEnum]);
 
             DB::commit();
-
+            Mail::to($order->user->email)->send(new OrderStatusUpdateMail($order, $oldStatus, $newStatus));
             Log::info('Order status updated:', [
                 'order_id' => $order->id,
-                'old_status' => $order->getOriginal('status'),
+                'old_status' => $oldStatus,
                 'new_status' => $newStatus
             ]);
         } catch (\Exception $e) {

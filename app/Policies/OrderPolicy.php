@@ -38,7 +38,16 @@ class OrderPolicy
      */
     public function update(User $user, Order $order): bool
     {
-        return $user->isAdmin();
+        if (!$user->isAdmin()) {
+            return false;
+        }
+
+        if ($order->status === OrderStatus::DELIVERED ||
+            $order->status === OrderStatus::CANCELLED) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

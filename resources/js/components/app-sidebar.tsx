@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Package, ShoppingCart, Tag, Heart, ListOrdered } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, Folder, LayoutGrid, Package, ShoppingCart, Tag, Heart, ListOrdered, FileText } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -16,19 +16,17 @@ import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+const baseNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Products',
         href: '/products',
         icon: Package,
     },
-
     {
         title: 'Orders',
         href: '/orders',
@@ -44,7 +42,6 @@ const mainNavItems: NavItem[] = [
         href: '/cart',
         icon: ShoppingCart,
     },
-
     {
         title: 'Wishlist',
         href: '/wishlist',
@@ -52,11 +49,26 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Manage Orders',
+        href: '/admin/orders',
+        icon: FileText,
+    },
 ];
 
+const footerNavItems: NavItem[] = [];
+
 export function AppSidebar() {
+    const { auth } = usePage().props as any;
+    const user = auth.user;
+
+    let mainNavItems = [...baseNavItems];
+
+    if (user?.type === 'admin') {
+        mainNavItems = [...mainNavItems, ...adminNavItems];
+    }
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

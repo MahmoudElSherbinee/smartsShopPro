@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderStatusUpdateMail;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Stripe\Webhook;
 use Stripe\Exception\SignatureVerificationException;
 
@@ -31,10 +33,12 @@ class WebhookController extends Controller
                 if ($orderId) {
                     $order = Order::find($orderId);
                     if ($order) {
+                        $oldStatus = $order->status->value;
                         $order->update([
                             'payment_status' => 'paid',
                             'status' => 'processing',
                         ]);
+                        Mail::to($order->user->email)->send(new OrderStatusUpdateMail($order, $oldStatus, "processing"));
                     }
                 }
                 break;
