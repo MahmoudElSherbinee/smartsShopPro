@@ -1,3 +1,10 @@
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
+[![Laravel Version](https://img.shields.io/badge/Laravel-12-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Stripe](https://img.shields.io/badge/Stripe-Integrated-635DFF?style=flat&logo=stripe&logoColor=white)](https://stripe.com)
+
 
 # 🛒 SmartShop Pro - E-Commerce Platform
 
@@ -43,6 +50,34 @@ A full-featured e-commerce platform built with **Laravel 12**, **React**, **Type
 | **Database** | MySQL |
 | **Payments** | Stripe API |
 | **Authentication** | Laravel Fortify + Sanctum |
+
+
+## 📸 Screenshots
+
+### 🛍️ Products Page (AI-Powered)
+![Products Page](screenshots/products.png)
+
+### 📦 Product Details
+![Product Details](screenshots/product.png)
+
+### 🛒 Shopping Cart
+![Shopping Cart](screenshots/cart.png)
+
+### 💳 Checkout with Stripe
+![Checkout](screenshots/checkout.png)
+
+### 📋 Orders Management
+![Orders](screenshots/order.png)
+
+### 🏷️ Categories Management (Admin)
+![Categories](screenshots/categories.png)
+
+### 📊 Admin Dashboard with AI Insights
+![Admin Dashboard](screenshots/admin.png)
+
+### 🔮 AI-Powered Admin Dashboard
+![AI Dashboard](screenshots/dashboard.png)
+
 
 ## 🏗️ Architecture
 
