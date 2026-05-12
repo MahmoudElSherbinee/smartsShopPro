@@ -221,7 +221,6 @@ This project is open-sourced software licensed under the [MIT license](https://o
 
 ## ⭐ Show Your Support
 
-If you found this project helpful, please give it a ⭐ on GitHub!
 ```
-
+If you found this project helpful, please give it a ⭐ on GitHub!
 ---
